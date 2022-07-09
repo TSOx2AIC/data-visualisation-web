@@ -8,9 +8,6 @@ df = pd.DataFrame({
 })
 
 st.write("(The Sound of)^2 AI Community")
-st.write("Test plot:")
-chart_data = pd.DataFrame(
-     np.random.randn(20, 3),
-     columns=['a', 'b', 'c'])
-
-st.line_chart(chart_data)
+st.write("WORK IN PROGRESS!")
+st.write("Here we will show the final analysis when we are ready.")
+st.write("Thank you for participation! :D")
