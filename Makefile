@@ -6,7 +6,7 @@ REGION=europe-west1
 .PHONY: activate
 ## activate: activates the python virtual environment
 activate:
-		source venv/bin/activate
+		pipenv shell
 
 .PHONY: run-local
 ## run-local: runs the streamlit application
@@ -17,7 +17,7 @@ run-local:
 .PHONY: build
 ## build: builds the docker image
 build:
-		pip3 freeze > requirements.txt  
+		pipenv lock -r > requirements.txt
 		docker build . -t ${IMAGE_NAME}
 
 .PHONY: run
