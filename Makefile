@@ -1,6 +1,7 @@
 DOCKER_REGISTRY=europe-west1-docker.pkg.dev/tsox2aic/tsox2aic
 IMAGE_NAME=data-visualisation-web
 SERVICE_NAME=data-visualisation-web
+REGION=europe-west1
 
 .PHONY: activate
 ## activate: activates the python virtual environment
@@ -35,7 +36,7 @@ push:
 .PHONY: deploy
 ## deploy: deploys the latest docker image to cloud run
 deploy:
-		gcloud run deploy ${SERVICE_NAME} --image ${DOCKER_REGISTRY}/${IMAGE_NAME}
+		gcloud run deploy ${SERVICE_NAME} --image ${DOCKER_REGISTRY}/${IMAGE_NAME} --region ${REGION}
 
 .PHONY: help
 ## help: prints this help message
