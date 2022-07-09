@@ -7,11 +7,6 @@ df = pd.DataFrame({
   'second column': [10, 20, 30, 40]
 })
 
-df= pd.DataFrame(
-    np.random.randn(10, 2),
-    columns=['x', 'y'])
-st.bar_chart(df)
-
 st.latex(r'''
      The Sound of^2 AI
      ''')
