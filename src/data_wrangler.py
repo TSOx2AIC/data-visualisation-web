@@ -55,6 +55,7 @@ for entry in entries:
             "name": track["name"],
             "popularity": track["popularity"],
             "url": track["external_urls"]["spotify"],
+            "preview_url": track["preview_url"],
             "artist_ids": [artist["id"] for artist in track["artists"]],
             "artist_names": [artist["name"] for artist in track["artists"]],
         }
