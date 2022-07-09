@@ -24,6 +24,7 @@ def load_data():
 
 def main():
     user_data, top_50 = load_data()
+    print(top_50["genres"])
 
     exit()
     data = top_50[['popularity', 'danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness',

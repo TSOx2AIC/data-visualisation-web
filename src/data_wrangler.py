@@ -8,7 +8,9 @@ load_dotenv()
 import os  
 import json
 import pandas as pd
+import numpy as np
 import spotipy
+import time
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # Setup credentials with spotify api. Reads secrets from .env
@@ -60,6 +62,11 @@ for entry in entries:
             "artist_names": [artist["name"] for artist in track["artists"]],
         }
         tracks.append(track_data)
+        artists = sp.artists(track_data["artist_ids"])
+        genres = np.array([artist["genres"] for artist in artists["artists"]])
+        track_data["genres"] = genres.flatten().tolist()
+        time.sleep(0.2)
+        
     tracks_df = pd.DataFrame(tracks)
     
     # Get audio features for each track
