@@ -9,7 +9,7 @@ def load_data():
     #entries = os.listdir("data/clean")
     
     entries = os.listdir("../data/clean")
-    entries.remove('.DS_Store')
+    #entries.remove('.DS_Store')
     for entry in entries:
         # Load user info
         # with open("data/clean/" + entry + "/userinfo.json") as f:
