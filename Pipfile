@@ -7,6 +7,9 @@ name = "pypi"
 streamlit = "*"
 python-dotenv = "*"
 spotipy = "*"
+pip = "*"
+install = "*"
+plotly = "==5.9.0"
 
 [dev-packages]
 
