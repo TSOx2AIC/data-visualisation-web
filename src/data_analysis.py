@@ -1,4 +1,3 @@
-from enum import unique
 import os  
 import json
 import pandas as pd
@@ -47,18 +46,16 @@ def get_community_top_sorted(top_50):
     return top_50
 
 
-def main():
-    user_data, top_50 = load_data("long")
-
-    community_top_sorted = get_community_top_sorted(top_50)
-    print(community_top_sorted)
-
-    qualitative = ['artist_names','genres','key','mode','speechiness','liveness','user_id', 'user_score']
+def principal_component_analysis_plot(user_data, community_top_sorted):
+    # Sort features
+    qualitative = ['artist_names','genres','key','mode','speechiness','liveness','user_id']
     quantative_normalizable = ['avg_artists_popularity', 'popularity', 'danceability', 'energy', 'loudness', 'acousticness', 'instrumentalness', 'valence', 'mode']
     quantative_not_normalizable = ['tempo', 'duration_ms', "user_id"]
     
+    # Normalise features
     quantative_normalized = community_top_sorted[quantative_normalizable].apply(lambda x: (x - x.mean())/x.std(), axis = 0)
 
+    # Reduce dimentions to 3 based on normalized quantative values of audio properties 
     pca = PCA(n_components=3)
     pca.fit(quantative_normalized)
 
@@ -66,9 +63,40 @@ def main():
 
     df = pd.concat([pca_data.reset_index(), community_top_sorted.reset_index()], axis=1)
 
-    fig = px.scatter_3d(df, x = 'pca1', y = 'pca2', z = 'pca3', color = 'user_id', size = 'community_score', size_max = 25,
-                        opacity = 0.7)
+    # Pretty print
+    df["pretty_name"] = df["name"] + " - " + df["artist_names"].apply(lambda x: " &".join(x[1:-1].split(',')).replace("'",""))
+    df["user_name"] = df["user_id"].map(lambda x: user_data[x]["displayName"])
 
+    # Create plot
+    fig = px.scatter_3d(df, x='pca1', y='pca2', z='pca3', color='user_name', size='community_score', size_max=30,
+                        opacity=0.7, hover_name="pretty_name", 
+                        hover_data={
+                            "pca1": False, 
+                            "pca2": False, 
+                            "pca3": False, 
+                            "user_name": True, 
+                            "genres": True, 
+                            "popularity": True, 
+                            "avg_artists_popularity": True, 
+                            "tempo": True,
+                            "key": True
+                        },
+                        labels={
+                            "user_name": "User Name", 
+                            "genres": "Artist Genres", 
+                            "popularity": "Popularity", 
+                            "avg_artists_popularity":"Average Artists Popularity", 
+                            "community_score": "Community Score"
+                        })
+    
+    fig.update_layout(legend_title="User Name")
+    return fig
+
+def main():
+    user_data, top_50 = load_data("long")
+
+    community_top_sorted = get_community_top_sorted(top_50)
+    fig = principal_component_analysis_plot(user_data, community_top_sorted)
     fig.show()
 
 if __name__ == "__main__":
