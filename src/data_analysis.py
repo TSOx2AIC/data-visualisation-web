@@ -221,6 +221,21 @@ def artist_ranking_plots(top_50):
 
 
 
+def get_mixed_songs(user_data, community_top_sorted):
+    used_snippets = ["https://p.scdn.co/mp3-preview/0a51a10b22c93ee8b214fe4a87a0b37fe98687f6?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/0c20b9097a095cebe2ee188d97b571488f6f7a11?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/00d78202ee105462335f330434fcfd65c6b4337f?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/1c8d9a2538a002378ed49014cd83ad0c3cabdcea?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/4e10a7370fa085954f4f7031ef7f8507ecd16aea?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/44f70421ee6350765738688558dfe6c931ea14b5?cid=8304b92fe9f542b888f57fe23d484b58",
+        "https://p.scdn.co/mp3-preview/1c8d9a2538a002378ed49014cd83ad0c3cabdcea?cid=8304b92fe9f542b888f57fe23d484b58"
+    ]
+
+    mixed_tracks = community_top_sorted.loc[community_top_sorted["preview_url"].isin(used_snippets)]
+    mixed_tracks["pretty_name"] = mixed_tracks["name"] + " - " + mixed_tracks["artist_names"].apply(lambda x: " &".join(x[1:-1].split(',')).replace("'",""))
+    mixed_tracks["user_name"] = mixed_tracks["user_id"].map(lambda x: user_data[x]["displayName"])
+    return mixed_tracks
+    
 def main():
     user_data, top_50 = load_data("long")
     community_top_sorted = get_community_top_sorted(top_50)
