@@ -5,8 +5,8 @@ import pandas as pd
 def load_data():
     user_data = {}
     top_50 = pd.DataFrame()
-    
-    entries = os.listdir("/data/clean")
+
+    entries = os.listdir("data/clean")
     for entry in entries:
         # Load user info
         with open("data/clean/" + entry + "/userinfo.json") as f:
