@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from src.data_analysis import principal_component_analysis_plot, get_mixed_songs, get_stats, threed_user_persona, genre_ranking_plots, artist_ranking_plots, get_community_top_sorted, load_data
+from src.data_analysis import principal_component_analysis_plot, get_mixed_songs, get_stats, threed_user_persona, get_community_top_sorted, load_data
 
 st.latex(r'''
      \textrm{Welcome to (The Sound of)}^2 \textrm{AI Community}
      ''')
-st.write("Thank you for participating by sharing your Top 50 songs :D")
 
 user_data, community_top_50 = load_data(timeframe="long")
 
@@ -16,10 +15,6 @@ community_data_sorted = get_community_top_sorted(community_top_50)
 fig = principal_component_analysis_plot(user_data, community_data_sorted)
 
 fig_user_3d = threed_user_persona(user_data, community_top_50)
-
-wc_genre, fig_genre = genre_ranking_plots(community_top_50)
-
-wc_artist, fig_artist = artist_ranking_plots(community_top_50)
 
 stats = get_stats(user_data, community_data_sorted, community_top_50)
 col1, col2, col3 = st.columns(3)
@@ -43,14 +38,16 @@ st.markdown('''<p style="font-size:11"> Please note that the features are calcul
 
 st.write('Most Listened to Genre')
 st.image("./images/genre.png")
+
 st.write('Most Listened to Artist')
 st.image("./images/artist.png")
-
 
 st.write('These are the song used in the mix:')
 songs = get_mixed_songs(user_data, community_data_sorted)
 st.dataframe(songs)
+
 audio_file = open('thesoundofsoundofai.wav', 'rb')
 audio_bytes = audio_file.read()
+
 st.write('Generated theme song for the first The Sound of AI Hackathon!')
 st.audio(audio_bytes, format="audio/wav", start_time=0)
