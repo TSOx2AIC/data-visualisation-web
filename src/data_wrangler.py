@@ -96,15 +96,14 @@ for entry in entries:
             track_data["avg_artists_followers"] = np.mean(popularity)
 
             tracks.append(track_data)
-            # Sleep to avoid being rate limited from the Spotify API
-            print(track_data)
-            time.sleep(0.2)
             
         tracks_df = pd.DataFrame(tracks)
-        
         # Get audio features for each track
         audio_features = sp.audio_features(tracks_df["id"])
         features_df = pd.DataFrame(audio_features).drop(["analysis_url", "type", "track_href", "uri"], axis=1)
+        
+        # Sleep to avoid being rate limited from the Spotify API
+        time.sleep(0.5)
         
         # Merge track information and audio features
         merged_df = pd.merge(tracks_df, features_df, left_on='id', right_on='id', how='inner')
