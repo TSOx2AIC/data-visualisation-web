@@ -18,7 +18,7 @@ def load_data():
         
         # Load top 50 data
         #df = pd.read_csv("data/clean/" + entry + "/top50.csv")
-        df = pd.read_csv("../data/clean/" + entry +  "/top50.csv")
+        df = pd.read_csv("../data/clean/" + entry +  "/top50-long.csv")
         df["user_id"] = user_data[entry]["id"]
         top_50 = top_50.append(df, ignore_index=True)
     return user_data, top_50

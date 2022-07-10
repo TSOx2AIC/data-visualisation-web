@@ -38,10 +38,11 @@ st.markdown('''<p style="font-size:11"> Please note that the features are calcul
 
 st.write('Most Listened to Genre')
 st.image("./images/genre.png")
+st.image("./images/genre-bar.png")
 
 st.write('Most Listened to Artist')
 st.image("./images/artist.png")
-
+st.image("./images/artist-bar.png")
 st.write('These are the song used in the mix:')
 songs = get_mixed_songs(user_data, community_data_sorted)
 st.dataframe(songs)
