@@ -40,9 +40,9 @@ for entry in entries:
 
     if user_data["id"] in already_parsed:
         print("Found")
+        continue
     else:
         print("Not found")
-    continue
 
     # Skip duplicate data (if user signed more than once)
     if user_data["id"] in parsed_user_ids:
