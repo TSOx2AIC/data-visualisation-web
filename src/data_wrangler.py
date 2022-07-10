@@ -58,53 +58,56 @@ for entry in entries:
     with open(folder_path + '/userinfo.json', 'w') as outfile:
         json.dump(user_info, outfile)
 
-    # Read track data
-    top_50_file_path = "data/raw/" + entry + "/top50-long.json"
-    with open(top_50_file_path) as f:
-        top50_data = json.load(f)
-    
-    # Parse track json object to csv friendly format
-    tracks = []
-    for rank, track in enumerate(top50_data["items"]):
-        track_data = {
-            "id": track["id"],
-            # The highest ranking song for the user gets 50 points, the second 49 etc
-            "user_score": len(top50_data["items"]) - rank, 
-            "name": track["name"],
-            "popularity": track["popularity"],
-            "url": track["external_urls"]["spotify"],
-            "album_cover_art_url": track["album"]["images"][0]["url"] if track["album"].get("images") is not None and len(track["album"]["images"]) > 0 else "",
-            "preview_url": track["preview_url"],
-            "artist_ids": [artist["id"] for artist in track["artists"]],
-            "artist_names": [artist["name"] for artist in track["artists"]],
-        }
-
-        # Get genre information from artists
-        artists = sp.artists(track_data["artist_ids"])
-        genres = [artist["genres"] for artist in artists["artists"]]
-        track_data["genres"] = list(chain(*genres))
+    # Go through both long and medium term data
+    top_50_timeframe = ["long", "medium"]
+    for timeframe in top_50_timeframe:
+        # Read track data
+        top_50_file_path = "data/raw/" + entry + f"/top50-{timeframe}.json"
+        with open(top_50_file_path) as f:
+            top50_data = json.load(f)
         
-        # Get avg artist popularity
-        popularity = [artist["popularity"] for artist in artists["artists"]]
-        track_data["avg_artists_popularity"] = np.mean(popularity)
+        # Parse track json object to csv friendly format
+        tracks = []
+        for rank, track in enumerate(top50_data["items"]):
+            track_data = {
+                "id": track["id"],
+                # The highest ranking song for the user gets 50 points, the second 49 etc
+                "user_score": len(top50_data["items"]) - rank, 
+                "name": track["name"],
+                "popularity": track["popularity"],
+                "url": track["external_urls"]["spotify"],
+                "album_cover_art_url": track["album"]["images"][0]["url"] if track["album"].get("images") is not None and len(track["album"]["images"]) > 0 else "",
+                "preview_url": track["preview_url"],
+                "artist_ids": [artist["id"] for artist in track["artists"]],
+                "artist_names": [artist["name"] for artist in track["artists"]],
+            }
 
-        # Get avg artist followers
-        followers = [artist["followers"] for artist in artists["artists"]]
-        track_data["avg_artists_followers"] = np.mean(popularity)
+            # Get genre information from artists
+            artists = sp.artists(track_data["artist_ids"])
+            genres = [artist["genres"] for artist in artists["artists"]]
+            track_data["genres"] = list(chain(*genres))
+            
+            # Get avg artist popularity
+            popularity = [artist["popularity"] for artist in artists["artists"]]
+            track_data["avg_artists_popularity"] = np.mean(popularity)
 
-        tracks.append(track_data)
-        # Sleep to avoid being rate limited from the Spotify API
-        print(track_data)
-        time.sleep(0.2)
+            # Get avg artist followers
+            followers = [artist["followers"] for artist in artists["artists"]]
+            track_data["avg_artists_followers"] = np.mean(popularity)
+
+            tracks.append(track_data)
+            # Sleep to avoid being rate limited from the Spotify API
+            print(track_data)
+            time.sleep(0.2)
+            
+        tracks_df = pd.DataFrame(tracks)
         
-    tracks_df = pd.DataFrame(tracks)
-    
-    # Get audio features for each track
-    audio_features = sp.audio_features(tracks_df["id"])
-    features_df = pd.DataFrame(audio_features).drop(["analysis_url", "type", "track_href", "uri"], axis=1)
-    
-    # Merge track information and audio features
-    merged_df = pd.merge(tracks_df, features_df, left_on='id', right_on='id', how='inner')
-    
-    # Write csv file to disk
-    merged_df.to_csv(folder_path+ "/top50.csv", index=False)
+        # Get audio features for each track
+        audio_features = sp.audio_features(tracks_df["id"])
+        features_df = pd.DataFrame(audio_features).drop(["analysis_url", "type", "track_href", "uri"], axis=1)
+        
+        # Merge track information and audio features
+        merged_df = pd.merge(tracks_df, features_df, left_on='id', right_on='id', how='inner')
+        
+        # Write csv file to disk
+        merged_df.to_csv(folder_path+ f"/top50-{timeframe}.csv", index=False)
