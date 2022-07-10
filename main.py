@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from src.data_analysis import principal_component_analysis_plot, get_mixed_songs, get_stats, threed_user_persona, get_community_top_sorted, load_data
+from src.data_analysis import principal_component_analysis_plot, get_mixed_songs, get_stats, threed_user_persona, get_community_top_sorted, load_data, get_shared_songs
 
 st.latex(r'''
     \textrm{Welcome to (The Sound of)}^2 \textrm{AI Community}
@@ -25,6 +25,10 @@ col3.metric("Number of shared tracks", stats["number_of_shared_tracks"])
 
 st.subheader('Principal Component Analysis of Community Songs')
 st.plotly_chart(fig)
+
+st.subheader('Community shared songs')
+shared_songs = get_shared_songs(community_data_sorted)
+st.dataframe(shared_songs)
 
 st.subheader('User Persona Relative to Community')
 st.plotly_chart(fig_user_3d)
