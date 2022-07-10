@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 streamlit = "*"
+python-dotenv = "*"
+spotipy = "*"
 
 [dev-packages]
 

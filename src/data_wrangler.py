@@ -3,6 +3,7 @@ Parses the user json files received from the web app and saves in a clean format
 The code enriches the data with audio features pulled from the Spotify API based on users top 50 track ids.
 Requires a .env file with correctly specified Spotify credentials, i.e. SPOTIPY_CLIENT_ID="" SPOTIPY_CLIENT_SECRET="".
 """
+from operator import ge
 from dotenv import load_dotenv
 load_dotenv()
 import os  
@@ -12,6 +13,7 @@ import numpy as np
 import spotipy
 import time
 from spotipy.oauth2 import SpotifyClientCredentials
+from itertools import chain
 
 # Setup credentials with spotify api. Reads secrets from .env
 auth_manager = SpotifyClientCredentials()
@@ -19,6 +21,8 @@ sp = spotipy.Spotify(auth_manager=auth_manager)
 
 # Wrangle data
 entries = os.listdir("data/raw")
+
+parsed_user_ids = []
 for entry in entries:
     # Parse the user information
     user_info_file_path = "data/raw/" + entry + "/userinfo.json"
@@ -26,6 +30,16 @@ for entry in entries:
     # Read user info
     with open(user_info_file_path) as f:
         user_data = json.load(f)
+
+    # If the user did not give us their email correctly, skip
+    if user_data == "User not registered in the Developer Dashboard":
+        continue
+
+    # Skip duplicate data (if user signed more than once)
+    if user_data["id"] in parsed_user_ids:
+        continue
+    else:
+        parsed_user_ids.append(user_data["id"])
 
     # Parse json format to csv friendly format
     user_info = {
@@ -51,20 +65,36 @@ for entry in entries:
     
     # Parse track json object to csv friendly format
     tracks = []
-    for track in top50_data["items"]:
+    for rank, track in enumerate(top50_data["items"]):
         track_data = {
             "id": track["id"],
+            # The highest ranking song for the user gets 50 points, the second 49 etc
+            "user_score": len(top50_data["items"]) - rank, 
             "name": track["name"],
             "popularity": track["popularity"],
             "url": track["external_urls"]["spotify"],
+            "album_cover_art_url": track["album"]["images"][0]["url"] if track["album"].get("images") is not None and len(track["album"]["images"]) > 0 else "",
             "preview_url": track["preview_url"],
             "artist_ids": [artist["id"] for artist in track["artists"]],
             "artist_names": [artist["name"] for artist in track["artists"]],
         }
-        tracks.append(track_data)
+
+        # Get genre information from artists
         artists = sp.artists(track_data["artist_ids"])
-        genres = np.array([artist["genres"] for artist in artists["artists"]])
-        track_data["genres"] = genres.flatten().tolist()
+        genres = [artist["genres"] for artist in artists["artists"]]
+        track_data["genres"] = list(chain(*genres))
+        
+        # Get avg artist popularity
+        popularity = [artist["popularity"] for artist in artists["artists"]]
+        track_data["avg_artists_popularity"] = np.mean(popularity)
+
+        # Get avg artist followers
+        followers = [artist["followers"] for artist in artists["artists"]]
+        track_data["avg_artists_followers"] = np.mean(popularity)
+
+        tracks.append(track_data)
+        # Sleep to avoid being rate limited from the Spotify API
+        print(track_data)
         time.sleep(0.2)
         
     tracks_df = pd.DataFrame(tracks)
