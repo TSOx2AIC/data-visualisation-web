@@ -10,6 +10,7 @@ spotipy = "*"
 pip = "*"
 install = "*"
 plotly = "==5.9.0"
+scikit-learn = "*"
 
 [dev-packages]
 
