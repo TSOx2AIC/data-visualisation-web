@@ -1,5 +1,6 @@
 import os  
 import json
+from turtle import onclick
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -69,7 +70,7 @@ def principal_component_analysis_plot(user_data, community_top_sorted):
 
     # Create plot
     fig = px.scatter_3d(df, x='pca1', y='pca2', z='pca3', color='user_name', size='community_score', size_max=30,
-                        opacity=0.7, hover_name="pretty_name", 
+                        opacity=0.7, hover_name="pretty_name",
                         hover_data={
                             "pca1": False, 
                             "pca2": False, 
@@ -79,23 +80,39 @@ def principal_component_analysis_plot(user_data, community_top_sorted):
                             "popularity": True, 
                             "avg_artists_popularity": True, 
                             "tempo": True,
-                            "key": True
+                            "key": True,
+                            "url": True
                         },
                         labels={
-                            "user_name": "User Name", 
+                            "user_name": "Username", 
                             "genres": "Artist Genres", 
                             "popularity": "Popularity", 
                             "avg_artists_popularity":"Average Artists Popularity", 
-                            "community_score": "Community Score"
+                            "community_score": "Community Score",
+                            "url": "Spotify URL"
                         })
     
-    fig.update_layout(legend_title="User Name")
+    fig.update_layout(legend_title="Username")
     return fig
+
+def get_stats(user_data, community_top_sorted, top_50):
+
+    number_of_participants = len(user_data)
+    number_of_unique_tracks = community_top_sorted['id'].nunique()
+    number_of_shared_tracks = len(community_top_sorted) - number_of_unique_tracks
+
+    stats = {
+        "number_of_participants": number_of_participants,
+        "number_of_unique_tracks": number_of_unique_tracks,
+        "number_of_shared_tracks": number_of_shared_tracks
+    }
+    return stats
 
 def main():
     user_data, top_50 = load_data("long")
-
     community_top_sorted = get_community_top_sorted(top_50)
+    get_stats(user_data, community_top_sorted, top_50)
+
     fig = principal_component_analysis_plot(user_data, community_top_sorted)
     fig.show()
 
