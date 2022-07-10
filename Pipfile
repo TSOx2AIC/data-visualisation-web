@@ -11,6 +11,8 @@ pip = "*"
 install = "*"
 plotly = "==5.9.0"
 scikit-learn = "*"
+matplotlib = "*"
+wordcloud = "*"
 
 [dev-packages]
 
