@@ -141,8 +141,6 @@ def threed_user_persona(user_data, top_50):
                         opacity = 0.7, labels = {'user_name': 'Username', 'dance_music_lover': 'Loves Dance Music', 'musical_positiveness': 'Enjoys Happy Music', 'popularity': 'Listens to Popular Songs',
                                                  'genres': 'Unique Numbers of Genres'} )
     
-    
-
     fig.update_layout(margin = dict(l=0, r=0, b=0, t=0), coloraxis_colorbar=dict(yanchor="top", y=1, x=0, ticks="outside"))
 
     return fig
@@ -180,14 +178,13 @@ def genre_ranking_plots(top_50):
         }
     
     plt.title("Most Listened to Genre", fontdict = font)
-    plt.show()
+    plt.savefig("genre.png")
     genre_rank_bar = genre_rank[genre_rank["name"] > 40]
     fig_genre = px.bar(genre_rank_bar, x = genre_rank_bar.index, y = 'name', labels = {'genres': 'Genre Name', 'name': "Count of Songs"})
 
     return wc_genre, fig_genre
 
 def artist_ranking_plots(top_50):
-    
     artist_genre_song = clean_artist_genre(top_50)
     artist_rank = artist_genre_song[["artist_names", "name"]].groupby(["artist_names"]).nunique().sort_values(by = 'name', ascending=False)
     artist_rank = artist_rank[artist_rank["name"] != 1]
@@ -206,20 +203,13 @@ def artist_ranking_plots(top_50):
         }
     
     plt.title("Most Listened to Artist", fontdict = font)
-    plt.show()
+    plt.savefig("artist.png")
 
     artist_rank_bar = artist_rank[artist_rank["name"] > 5]
     fig_artist = px.bar(artist_rank_bar, x = artist_rank_bar.index, y = 'name', labels = {'artist_names': 'Artist Name', 'name': "Count of Songs"})
 
 
     return wc_artist, fig_artist
-
-
-
-
-
-
-
 
 def get_mixed_songs(user_data, community_top_sorted):
     used_snippets = ["https://p.scdn.co/mp3-preview/0a51a10b22c93ee8b214fe4a87a0b37fe98687f6?cid=8304b92fe9f542b888f57fe23d484b58",
@@ -242,17 +232,14 @@ def main():
     get_stats(user_data, community_top_sorted, top_50)
 
     fig = principal_component_analysis_plot(user_data, community_top_sorted)
-    fig.show()
-    
-    fig_user_3d = threed_user_persona(top_50)
-    fig_user_3d.show()
+
+    fig_user_3d = threed_user_persona(user_data, top_50)
     
     fig_genre = genre_ranking_plots(top_50)
-    fig_genre.show()
     
     fig_artist = artist_ranking_plots(top_50)
-    fig_artist.show()
-    
+
+
 
 if __name__ == "__main__":
     main()

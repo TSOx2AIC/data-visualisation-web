@@ -7,7 +7,7 @@ from src.data_analysis import principal_component_analysis_plot, get_mixed_songs
 st.latex(r'''
      \textrm{Welcome to (The Sound of)}^2 \textrm{AI Community}
      ''')
-st.write("Thank you for participating by sharing your Top 50 songs :)")
+st.write("Thank you for participating by sharing your Top 50 songs :D")
 
 user_data, community_top_50 = load_data(timeframe="long")
 
@@ -42,12 +42,9 @@ st.markdown('''<p style="font-size:11"> Please note that the features are calcul
             ''', unsafe_allow_html=True)
 
 st.write('Most Listened to Genre')
-st.pyplot(wc_genre)
-st.plotly_chart(fig_genre)
-
+st.image("./images/genre.png")
 st.write('Most Listened to Artist')
-st.pyplot(wc_artist)
-st.plotly_chart(fig_artist)
+st.image("./images/artist.png")
 
 
 st.write('These are the song used in the mix:')

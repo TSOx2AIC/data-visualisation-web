@@ -5,6 +5,7 @@ Requires a .env file with correctly specified Spotify credentials, i.e. SPOTIPY_
 """
 from operator import ge
 from dotenv import load_dotenv
+from matplotlib.pyplot import pink
 load_dotenv()
 import os  
 import json
@@ -21,6 +22,7 @@ sp = spotipy.Spotify(auth_manager=auth_manager)
 
 # Wrangle data
 entries = os.listdir("data/raw")
+already_parsed = os.listdir("data/clean")
 
 parsed_user_ids = []
 for entry in entries:
@@ -33,7 +35,14 @@ for entry in entries:
 
     # If the user did not give us their email correctly, skip
     if user_data == "User not registered in the Developer Dashboard":
+        print("Wrong email")
         continue
+
+    if user_data["id"] in already_parsed:
+        print("Found")
+    else:
+        print("Not found")
+    continue
 
     # Skip duplicate data (if user signed more than once)
     if user_data["id"] in parsed_user_ids:
