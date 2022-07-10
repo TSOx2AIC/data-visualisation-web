@@ -6,6 +6,10 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.decomposition import PCA
+from ast import literal_eval
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from PIL import Image
 
 # Ignore pandas deprecated warnings... We are hacking...
 import warnings
@@ -108,6 +112,115 @@ def get_stats(user_data, community_top_sorted, top_50):
     }
     return stats
 
+def threed_user_persona(user_data, top_50):
+    qualitative = ['artist_names','genres','key','mode','speechiness','liveness','user_id']
+    quantative_normalizable = ['popularity', 'danceability', 'energy', 'loudness','speechiness',
+        'acousticness', 'instrumentalness', 'valence', 'mode']
+    quantative_not_normalizable = ['tempo', 'duration_ms','user_id']
+    # relative way of normalizing - more distinctive result / shows more persona
+    quantative_normalized = top_50[quantative_normalizable].apply(lambda x: (x - x.mean())/x.std(), axis = 0)
+    # absolute way of normalizing - range is [0,1], less distinctive result / a couple of features are similar among users: energy, loudness, valence, etc. 
+    # quantative_normalized = (top_50[quantative_normalizable] - top_50[quantative_normalizable].min())/(top_50[quantative_normalizable].max()-top_50[quantative_normalizable].min())
+    quantative_top50 = pd.concat([top_50[quantative_not_normalizable],quantative_normalized], axis = 1 )
+
+    ##### Averaging each feature for each user
+    user_average_data = quantative_top50.groupby(["user_id"]).mean()
+    user_average_data = user_average_data.join(top_50[["user_id", "artist_names","genres"]].groupby(["user_id"]).nunique(), on = 'user_id')
+    # using 3 criteria: 
+    # 1. popularity
+    # 2. dance music lover: 0.6 * danceability + 0.3 * loudness + 0.3 * energy - 0.2 * acousticness
+    # 3. musical positiveness: 0.8 * valence + 0.2 * mode
+    # mode -> 1: major key, mode -> 0: minor key
+    user_average_data["dance_music_lover"] = user_average_data["danceability"] * 0.6 + user_average_data["loudness"] * 0.3 + user_average_data["energy"] * 0.3 - user_average_data["acousticness"] * 0.2
+    user_average_data["musical_positiveness"] = user_average_data["valence"] * 0.8 + user_average_data["mode"] * 0.2
+    user_average_data["user_name"] = user_average_data.index.map(lambda x: user_data[x]["displayName"])
+
+    ##### Plotting
+
+    fig = px.scatter_3d(user_average_data, x = 'dance_music_lover', y = 'musical_positiveness', z = 'popularity', color = 'user_name', size = 'genres', size_max = 30,
+                        opacity = 0.7, labels = {'user_name': 'Username', 'dance_music_lover': 'Loves Dance Music', 'musical_positiveness': 'Enjoys Happy Music', 'popularity': 'Listens to Popular Songs',
+                                                 'genres': 'Unique Numbers of Genres'} )
+    
+    
+
+    fig.update_layout(margin = dict(l=0, r=0, b=0, t=0), coloraxis_colorbar=dict(yanchor="top", y=1, x=0, ticks="outside"))
+
+    return fig
+
+def clean_artist_genre (top_50):
+    ###### Dataframe Cleanup
+    artist_genre_song = top_50[["artist_names", "genres", "name"]]
+    artist_genre_song["artist_names"] = artist_genre_song["artist_names"].apply(literal_eval)
+    artist_genre_song["genres"] = artist_genre_song["genres"].apply(literal_eval)
+    artist_genre_song = artist_genre_song.explode('artist_names')
+    artist_genre_song = artist_genre_song.explode('genres')
+    artist_genre_song = artist_genre_song.explode('genres')
+    
+    return artist_genre_song
+
+
+def genre_ranking_plots(top_50):
+    
+    artist_genre_song = clean_artist_genre(top_50)
+    ###### Creating Ranking for Genres & Artists respectively
+    genre_rank = artist_genre_song[["genres", "name"]].groupby(["genres"]).nunique().sort_values(by = 'name', ascending=False)
+    genre_rank = genre_rank[genre_rank["name"] > 5]
+    
+    d = genre_rank.to_dict()["name"]
+
+    wordcloud = WordCloud(width = 1200, height = 800, background_color = 'white', colormap = 'Dark2')
+    wordcloud.generate_from_frequencies(d)
+    wc_genre = plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    font = {'family': 'numans',
+        'color':  'darkred',
+        'weight': 'bold',
+        'size': 16,
+        }
+    
+    plt.title("Most Listened to Genre", fontdict = font)
+    plt.show()
+    genre_rank_bar = genre_rank[genre_rank["name"] > 40]
+    fig_genre = px.bar(genre_rank_bar, x = genre_rank_bar.index, y = 'name', labels = {'genres': 'Genre Name', 'name': "Count of Songs"})
+
+    return wc_genre, fig_genre
+
+def artist_ranking_plots(top_50):
+    
+    artist_genre_song = clean_artist_genre(top_50)
+    artist_rank = artist_genre_song[["artist_names", "name"]].groupby(["artist_names"]).nunique().sort_values(by = 'name', ascending=False)
+    artist_rank = artist_rank[artist_rank["name"] != 1]
+    
+    d = artist_rank.to_dict()["name"]
+
+    wordcloud = WordCloud(width = 1200, height = 800, background_color = 'white', colormap = 'Dark2')
+    wordcloud.generate_from_frequencies(d)
+    wc_artist = plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    font = {'family': 'numans',
+        'color':  'darkred',
+        'weight': 'bold',
+        'size': 16,
+        }
+    
+    plt.title("Most Listened to Artist", fontdict = font)
+    plt.show()
+
+    artist_rank_bar = artist_rank[artist_rank["name"] > 5]
+    fig_artist = px.bar(artist_rank_bar, x = artist_rank_bar.index, y = 'name', labels = {'genres': 'Artist Name', 'name': "Count of Songs"})
+
+
+    return wc_artist, fig_artist
+
+
+
+
+
+
+
+
 def main():
     user_data, top_50 = load_data("long")
     community_top_sorted = get_community_top_sorted(top_50)
@@ -115,6 +228,16 @@ def main():
 
     fig = principal_component_analysis_plot(user_data, community_top_sorted)
     fig.show()
+    
+    fig_user_3d = threed_user_persona(top_50)
+    fig_user_3d.show()
+    
+    fig_genre = genre_ranking_plots(top_50)
+    fig_genre.show()
+    
+    fig_artist = artist_ranking_plots(top_50)
+    fig_artist.show()
+    
 
 if __name__ == "__main__":
     main()
