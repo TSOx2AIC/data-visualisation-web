@@ -34,9 +34,8 @@ def load_data(timeframe="long"):
 
 def get_community_top_sorted(top_50):
     # Count track accurences
-    song_occurences = top_50.groupby(["id"])["id"].count()
-    top_50 = pd.merge(top_50, song_occurences, left_on='id', right_index=True, how='inner')
-    top_50.drop(["id_x", "id_y"], axis=1, inplace=True)
+    song_occurrences = top_50.groupby(["id"])["id"].count().rename("community_occurrences")
+    top_50 = pd.merge(top_50, song_occurrences, left_on='id', right_index=True, how='inner')
 
     # Community score weighted by user scores
     top_50["community_score"] = top_50["user_score"].groupby(top_50["id"]).transform("sum")
@@ -47,6 +46,8 @@ def get_community_top_sorted(top_50):
 
     # Drop duplicates
     top_50.drop_duplicates(subset=["id"], inplace=True)
+
+    top_50["pretty_name"] = top_50["name"] + " - " + top_50["artist_names"].apply(lambda x: " &".join(x[1:-1].split(',')).replace("'",""))
 
     return top_50
 
@@ -222,10 +223,12 @@ def get_mixed_songs(user_data, community_top_sorted):
     ]
 
     mixed_tracks = community_top_sorted.loc[community_top_sorted["preview_url"].isin(used_snippets)]
-    mixed_tracks["pretty_name"] = mixed_tracks["name"] + " - " + mixed_tracks["artist_names"].apply(lambda x: " &".join(x[1:-1].split(',')).replace("'",""))
     mixed_tracks["user_name"] = mixed_tracks["user_id"].map(lambda x: user_data[x]["displayName"])
-    return mixed_tracks
-    
+    return mixed_tracks[["pretty_name", "url"]]
+
+def get_shared_songs(community_top_sorted):
+    return community_top_sorted.loc[community_top_sorted['community_occurrences'] > 1][["pretty_name", "community_occurrences"]].sort_values("community_occurrences", ascending=False)
+
 def main():
     user_data, top_50 = load_data("long")
     community_top_sorted = get_community_top_sorted(top_50)
