@@ -209,7 +209,7 @@ def artist_ranking_plots(top_50):
     plt.show()
 
     artist_rank_bar = artist_rank[artist_rank["name"] > 5]
-    fig_artist = px.bar(artist_rank_bar, x = artist_rank_bar.index, y = 'name', labels = {'genres': 'Artist Name', 'name': "Count of Songs"})
+    fig_artist = px.bar(artist_rank_bar, x = artist_rank_bar.index, y = 'name', labels = {'artist_names': 'Artist Name', 'name': "Count of Songs"})
 
 
     return wc_artist, fig_artist
