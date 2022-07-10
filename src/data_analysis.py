@@ -103,7 +103,7 @@ def get_stats(user_data, community_top_sorted, top_50):
 
     number_of_participants = len(user_data)
     number_of_unique_tracks = community_top_sorted['id'].nunique()
-    number_of_shared_tracks = len(community_top_sorted) - number_of_unique_tracks
+    number_of_shared_tracks = len(top_50) - number_of_unique_tracks
 
     stats = {
         "number_of_participants": number_of_participants,
