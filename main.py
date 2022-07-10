@@ -28,13 +28,11 @@ st.write('Principal Component Analysis of Community Songs')
 st.plotly_chart(fig)
 st.write('User Persona Relative to Community')
 st.plotly_chart(fig_user_3d)
-st.markdown('''<p style="font-size:11">Please note that the features are calculated in the following ways:
+st.markdown('''<p style="font-size:11"> Please note that the features are calculated in the following ways:
             <br> Popularity: popularity of the song
             <br> Loves Dance Music: 0.6 * danceability + 0.3 * loudness + 0.3 * energy - 0.2 * acousticness
             <br> Enjoys Happy Music (Musical Positiveness): 0.8 * valence + 0.2 * mode
             <br> The size of the user is reflected by the number of unique genres they listen to.
-            
-            
             </p>''', unsafe_allow_html=True)
 st.write('Most Listened to Genre')
 st.pyplot(wc_genre)
