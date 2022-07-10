@@ -3,3 +3,4 @@ data
 .env
 .cache
 data.zip
+.vscode
